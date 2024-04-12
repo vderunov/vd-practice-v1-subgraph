@@ -1,0 +1,8 @@
+{
+  "optimism-sepolia": {
+    "Whitelist": {
+      "address": "0x70b4d3249437E2a84EdE557B1952d06A42B344F6",
+      "startBlock": 10491035
+    }
+  }
+}
