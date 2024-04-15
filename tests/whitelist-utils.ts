@@ -1,38 +1,9 @@
 import { newMockEvent } from "matchstick-as"
 import { ethereum, Bytes, Address } from "@graphprotocol/graph-ts"
 import {
-  RoleAdminChanged,
   RoleGranted,
   RoleRevoked
 } from "../generated/Whitelist/Whitelist"
-
-export function createRoleAdminChangedEvent(
-  role: Bytes,
-  previousAdminRole: Bytes,
-  newAdminRole: Bytes
-): RoleAdminChanged {
-  let roleAdminChangedEvent = changetype<RoleAdminChanged>(newMockEvent())
-
-  roleAdminChangedEvent.parameters = new Array()
-
-  roleAdminChangedEvent.parameters.push(
-    new ethereum.EventParam("role", ethereum.Value.fromFixedBytes(role))
-  )
-  roleAdminChangedEvent.parameters.push(
-    new ethereum.EventParam(
-      "previousAdminRole",
-      ethereum.Value.fromFixedBytes(previousAdminRole)
-    )
-  )
-  roleAdminChangedEvent.parameters.push(
-    new ethereum.EventParam(
-      "newAdminRole",
-      ethereum.Value.fromFixedBytes(newAdminRole)
-    )
-  )
-
-  return roleAdminChangedEvent
-}
 
 export function createRoleGrantedEvent(
   role: Bytes,

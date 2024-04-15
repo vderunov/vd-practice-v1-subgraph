@@ -4,61 +4,131 @@ import {
   test,
   clearStore,
   beforeAll,
-  afterAll
 } from "matchstick-as/assembly/index"
-import { Bytes, Address } from "@graphprotocol/graph-ts"
-import { RoleAdminChanged } from "../generated/schema"
-import { RoleAdminChanged as RoleAdminChangedEvent } from "../generated/Whitelist/Whitelist"
-import { handleRoleAdminChanged } from "../src/whitelist"
-import { createRoleAdminChangedEvent } from "./whitelist-utils"
+import {Bytes, Address} from "@graphprotocol/graph-ts"
+import {handleRoleGranted, handleRoleRevoked} from "../src/whitelist"
+import {createRoleGrantedEvent, createRoleRevokedEvent} from "./whitelist-utils"
 
-// Tests structure (matchstick-as >=0.5.0)
-// https://thegraph.com/docs/en/developer/matchstick/#tests-structure-0-5-0
+const PENDING_ROLE = "0x70656e64696e6700000000000000000000000000000000000000000000000000";
+const GRANTED_ROLE = "0x6772616e74656400000000000000000000000000000000000000000000000000";
 
-describe("Describe entity assertions", () => {
-  beforeAll(() => {
-    let role = Bytes.fromI32(1234567890)
-    let previousAdminRole = Bytes.fromI32(1234567890)
-    let newAdminRole = Bytes.fromI32(1234567890)
-    let newRoleAdminChangedEvent = createRoleAdminChangedEvent(
-      role,
-      previousAdminRole,
-      newAdminRole
-    )
-    handleRoleAdminChanged(newRoleAdminChangedEvent)
+const address = "0x1234567890123456789012345678901234567890";
+const address2 = "0x1234567890123456789012345678901234567891";
+
+describe("handleRoleGranted()", () => {
+  describe("Role change events handling", () => {
+    beforeAll(() => {
+      clearStore()
+    })
+
+    test("Account status set to 'pending' after role granted", () => {
+      const newRoleAdminChangedEvent = createRoleGrantedEvent(
+        Bytes.fromHexString(PENDING_ROLE),
+        Address.fromString(address),
+        Address.fromString(address)
+      )
+      handleRoleGranted(newRoleAdminChangedEvent)
+      assert.entityCount("Wallet", 1)
+      assert.fieldEquals("Wallet", address, "granted", "false")
+      assert.fieldEquals("Wallet", address, "admin", "false")
+      assert.fieldEquals("Wallet", address, "pending", "true")
+    })
+
+    test("Account status set to 'granted' after role granted", () => {
+      const newRoleAdminChangedEvent = createRoleGrantedEvent(
+        Bytes.fromHexString(GRANTED_ROLE),
+        Address.fromString(address2),
+        Address.fromString(address2)
+      )
+      handleRoleGranted(newRoleAdminChangedEvent)
+      assert.entityCount("Wallet", 2)
+      assert.fieldEquals("Wallet", address2, "granted", "true")
+      assert.fieldEquals("Wallet", address2, "admin", "false")
+      assert.fieldEquals("Wallet", address2, "pending", "false")
+    })
   })
 
-  afterAll(() => {
+  describe("Changing a role of account from 'pending' to 'granted'", () => {
+    beforeAll(() => {
+      clearStore()
+    })
+
+    test("Account status set to 'pending' after role granted", () => {
+      const newRoleAdminChangedEvent = createRoleGrantedEvent(
+        Bytes.fromHexString(PENDING_ROLE),
+        Address.fromString(address),
+        Address.fromString(address)
+      )
+      handleRoleGranted(newRoleAdminChangedEvent)
+      assert.entityCount("Wallet", 1)
+      assert.fieldEquals("Wallet", address, "granted", "false")
+      assert.fieldEquals("Wallet", address, "admin", "false")
+      assert.fieldEquals("Wallet", address, "pending", "true")
+    })
+
+    test("Account status set to 'granted' after role granted", () => {
+      const newRoleAdminChangedEvent = createRoleGrantedEvent(
+        Bytes.fromHexString(GRANTED_ROLE),
+        Address.fromString(address),
+        Address.fromString(address)
+      )
+      handleRoleGranted(newRoleAdminChangedEvent)
+      assert.entityCount("Wallet", 1)
+      assert.fieldEquals("Wallet", address, "granted", "true")
+      assert.fieldEquals("Wallet", address, "admin", "false")
+      assert.fieldEquals("Wallet", address, "pending", "false")
+    })
+  })
+})
+
+describe('handleRoleRevoked()', () => {
+  beforeAll(() => {
     clearStore()
   })
 
-  // For more test scenarios, see:
-  // https://thegraph.com/docs/en/developer/matchstick/#write-a-unit-test
-
-  test("RoleAdminChanged created and stored", () => {
-    assert.entityCount("RoleAdminChanged", 1)
-
-    // 0xa16081f360e3847006db660bae1c6d1b2e17ec2a is the default address used in newMockEvent() function
-    assert.fieldEquals(
-      "RoleAdminChanged",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
-      "role",
-      "1234567890"
+  test("Revoke 'pending' role", () => {
+    const newRoleAdminChangedEvent = createRoleGrantedEvent(
+      Bytes.fromHexString(PENDING_ROLE),
+      Address.fromString(address),
+      Address.fromString(address)
     )
-    assert.fieldEquals(
-      "RoleAdminChanged",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
-      "previousAdminRole",
-      "1234567890"
-    )
-    assert.fieldEquals(
-      "RoleAdminChanged",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
-      "newAdminRole",
-      "1234567890"
-    )
+    handleRoleGranted(newRoleAdminChangedEvent)
 
-    // More assert options:
-    // https://thegraph.com/docs/en/developer/matchstick/#asserts
+    assert.fieldEquals("Wallet", address, "pending", "true")
+
+    const newRoleRevokedEvent = createRoleRevokedEvent(
+      Bytes.fromHexString(PENDING_ROLE),
+      Address.fromString(address),
+      Address.fromString(address)
+    )
+    handleRoleRevoked(newRoleRevokedEvent)
+    assert.entityCount("Wallet", 1)
+
+    assert.fieldEquals("Wallet", address, "granted", "false")
+    assert.fieldEquals("Wallet", address, "admin", "false")
+    assert.fieldEquals("Wallet", address, "pending", "false")
+  })
+
+  test("Revoke 'granted' role", () => {
+    const newRoleAdminChangedEvent = createRoleGrantedEvent(
+      Bytes.fromHexString(GRANTED_ROLE),
+      Address.fromString(address),
+      Address.fromString(address)
+    )
+    handleRoleGranted(newRoleAdminChangedEvent)
+
+    assert.fieldEquals("Wallet", address, "granted", "true")
+
+    const newRoleRevokedEvent = createRoleRevokedEvent(
+      Bytes.fromHexString(GRANTED_ROLE),
+      Address.fromString(address),
+      Address.fromString(address)
+    )
+    handleRoleRevoked(newRoleRevokedEvent)
+    assert.entityCount("Wallet", 1)
+
+    assert.fieldEquals("Wallet", address, "granted", "false")
+    assert.fieldEquals("Wallet", address, "admin", "false")
+    assert.fieldEquals("Wallet", address, "pending", "false")
   })
 })
