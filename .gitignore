@@ -131,3 +131,10 @@ dist
 !.yarn/versions
 
 .idea
+
+.bin/
+tests/.bin/
+tests/.latest.json
+subgraph.yaml
+deployments/
+build/

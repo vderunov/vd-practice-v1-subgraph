@@ -1,6 +1,0 @@
-type Wallet @entity(immutable: false) {
-  id: Bytes!
-  admin: Boolean!
-  pending: Boolean!
-  granted: Boolean!
-}

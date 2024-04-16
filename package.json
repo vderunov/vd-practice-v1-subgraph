@@ -2,8 +2,9 @@
   "name": "vd-practice-v1",
   "license": "UNLICENSED",
   "scripts": {
-    "codegen": "graph codegen",
-    "build": "graph build",
+    "codegen:base-optimism-sepolia": "graph codegen subgraph.base-optimism-sepolia.yaml --output-dir ./base-optimism-sepolia/generated",
+    "build:base-optimism-sepolia": "graph build subgraph.base-optimism-sepolia.yaml --output-dir ./build/base-optimism-sepolia",
+    "deploy:base-optimism-sepolia": "graph deploy vd-practice-v1 subgraph.base-optimism-sepolia.yaml --studio --output-dir ./build/base-optimism-sepolia --version-label v0.0.7",
     "deploy": "graph deploy --node https://api.thegraph.com/deploy/ vderunov/vd-practice-v1",
     "create-local": "graph create --node http://localhost:8020/ vderunov/vd-practice-v1",
     "remove-local": "graph remove --node http://localhost:8020/ vderunov/vd-practice-v1",

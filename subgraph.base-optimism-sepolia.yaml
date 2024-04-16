@@ -2,7 +2,7 @@ specVersion: 1.0.0
 indexerHints:
   prune: auto
 schema:
-  file: schema.graphql
+  file: ./base-optimism-sepolia/schema.graphql
 dataSources:
   - kind: ethereum
     name: Whitelist
@@ -19,10 +19,10 @@ dataSources:
         - Wallet
       abis:
         - name: Whitelist
-          file: Whitelist/abis/Whitelist.json
+          file: ./base-optimism-sepolia/deployments/abis/Whitelist.json
       eventHandlers:
         - event: RoleGranted(indexed bytes32,indexed address,indexed address)
           handler: handleRoleGranted
         - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
           handler: handleRoleRevoked
-      file: Whitelist/Whitelist.wasm
+      file: ./base-optimism-sepolia/index.ts
